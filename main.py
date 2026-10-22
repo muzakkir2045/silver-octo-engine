@@ -1,18 +1,21 @@
 
 
 from utils import generate_short_id
-from fastapi import FastAPI, status , responses
-from pydantic import BaseModel
-import webbrowser
+from fastapi import FastAPI, status 
+from fastapi.responses import RedirectResponse
+from pydantic import BaseModel, ConfigDict
 
-class URL_Contents(BaseModel):
-    original_url : str 
 
-class UrlResponse(BaseModel):
+class UrlBase(BaseModel):
     original_url : str
+    
+class UrlCreate(UrlBase):
+    pass
+
+class UrlResponse(UrlBase):
+    model_config = ConfigDict(from_attributes = True)
     new_url : str
-
-
+    date_created : str
 
 app = FastAPI()
 
@@ -23,32 +26,32 @@ def generate_short_url(long_url):
     short_id = generate_short_id(long_url)
     while short_id in url_mapping.keys():
         short_id = generate_short_id(long_url)
-    
     short_url = f"http://127.0.0.1:8000/{short_id}"
     url_mapping[short_id] = long_url
     return short_url
 
-@app.get("/{shortcode}")
-def home(shortcode):
-
-    if shortcode not in url_mapping:
-        response = responses.RedirectResponse("/home")
-        return response
-
-    return responses.RedirectResponse("http://www.google.com")
-
-@app.get("/home")
+@app.get("/")
 def home():
     return {"Message" : "Ok"}
 
 
-@app.post("/get_new_url")
-def get_new_url(URL_Contents : URL_Contents):
+@app.get("/{shortcode}")
+def get_shortcode(shortcode):
 
-    
-    new_url = generate_short_url(URL_Contents.original_url)
+    if shortcode not in url_mapping:
+        return RedirectResponse("/")
 
-    return {"Message" : status.HTTP_201_CREATED , 
-            "Data" : new_url}
+    return RedirectResponse(url=url_mapping[shortcode], status_code = status.HTTP_301_MOVED_PERMANENTLY)
+
+
+
+@app.post("/get_new_url", response_model=UrlResponse)
+def get_new_url(UrlCreate : UrlCreate):
+    data = {
+        "original_url" : UrlCreate.original_url,
+        "new_url" : generate_short_url(UrlCreate.original_url),
+        "date_created" : "22-10-2026"
+    }
+    return data
 
 
