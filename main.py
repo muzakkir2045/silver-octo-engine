@@ -8,6 +8,8 @@ from pydantic import BaseModel, ConfigDict
 
 class UrlBase(BaseModel):
     original_url : str
+    link_creation_date : str
+    link_expiration_date : str
     
 class UrlCreate(UrlBase):
     pass
@@ -15,7 +17,7 @@ class UrlCreate(UrlBase):
 class UrlResponse(UrlBase):
     model_config = ConfigDict(from_attributes = True)
     new_url : str
-    date_created : str
+    
 
 app = FastAPI()
 
@@ -50,7 +52,9 @@ def get_new_url(UrlCreate : UrlCreate):
     data = {
         "original_url" : UrlCreate.original_url,
         "new_url" : generate_short_url(UrlCreate.original_url),
-        "date_created" : "22-10-2026"
+        "link_creation_date" : UrlCreate.link_creation_date,
+        "link_expiration_date" : UrlCreate.link_expiration_date
+
     }
     return data
 
