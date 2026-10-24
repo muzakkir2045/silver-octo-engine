@@ -3,26 +3,14 @@
 from utils import generate_short_id
 from fastapi import FastAPI, status 
 from fastapi.responses import RedirectResponse
-from pydantic import BaseModel, ConfigDict
-
-
-class UrlBase(BaseModel):
-    original_url : str
-    link_creation_date : str
-    link_expiration_date : str
-    
-class UrlCreate(UrlBase):
-    pass
-
-class UrlResponse(UrlBase):
-    model_config = ConfigDict(from_attributes = True)
-    new_url : str
+from schemas import UrlCreate, UrlResponse
     
 
 app = FastAPI()
 
 url_mapping = {}
 
+url_data = {}
 
 def generate_short_url(long_url):
     short_id = generate_short_id(long_url)
@@ -49,13 +37,20 @@ def get_shortcode(shortcode):
 
 @app.post("/get_new_url", response_model=UrlResponse)
 def get_new_url(UrlCreate : UrlCreate):
+
+    original_url = UrlCreate.original_url
+
     data = {
         "original_url" : UrlCreate.original_url,
         "new_url" : generate_short_url(UrlCreate.original_url),
-        "link_creation_date" : UrlCreate.link_creation_date,
-        "link_expiration_date" : UrlCreate.link_expiration_date
-
+        "creation_date" : "20-10-2026",
+        "expiration_date" : "20-10-2027",
+        "total_click_count" : 0
     }
+
+    url_mapping[data["new_url"]] = data["original_url"]
+
+    
     return data
 
 
