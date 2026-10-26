@@ -31,7 +31,9 @@ class UrlResponse(UrlBase):
     id : int
     new_url : str
     creation_date : str
-    expiration_date : str 
+    expiration_date : str
+    unique_visitors : int = 0
+    total_visitors : int = 0
 
 class UrlMapper(BaseModel):
 

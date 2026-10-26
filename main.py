@@ -1,7 +1,7 @@
 
-
+from typing import Annotated
 from utils import generate_short_id
-from fastapi import FastAPI, status 
+from fastapi import FastAPI, status , Header , Request
 from fastapi.responses import RedirectResponse
 from schemas import UrlCreate, UrlResponse, UrlMapper
     
@@ -9,9 +9,11 @@ from schemas import UrlCreate, UrlResponse, UrlMapper
 app = FastAPI()
 URL = "http://127.0.0.1:8000/"
 url_mapping = {}
-
 url_data = {}
 
+
+total = 0
+ips = set()
 def generate_short_url(long_url):
     short_id = generate_short_id(long_url)
     while short_id in url_mapping.keys():
@@ -21,16 +23,44 @@ def generate_short_url(long_url):
     return short_url
 
 @app.get("/")
-def home():
-    return {"Message" : "Ok"}
+def home(request : Request):
+    # global unique , total, ips
+    # forwarded_for = request.headers.get('x-forwarded_for')
+    # client_ip = forwarded_for.split(",")[0] if forwarded_for else request.client.host
+    # # print(forwarded_for)
+    # # print(client_ip)
+    # if client_ip not in ips:
+    #     ips.add(client_ip)
+    #     total += 1
+    # else:
+    #     total += 1
+    # # print(ips)
+    return {
+        "Message" : "Ok" ,
+        # "Headers" : request.headers,
+        # "Unique" : len(ips),
+        # "Total" : total
+    }
+
 
 
 @app.get("/{shortcode}")
-def get_shortcode(shortcode : str):
+def get_shortcode(shortcode : str, request : Request):
+
 
     if shortcode not in url_mapping:
-        return RedirectResponse("/")
+        return RedirectResponse(url="/")
 
+    global total , ips
+    forwarded_for = request.headers.get('x-forwarded_for')
+    client_ip = forwarded_for.split(",")[0] if forwarded_for else request.client.host
+
+    if client_ip not in ips:
+        ips.add(client_ip)
+    total += 1
+
+    
+    
     return RedirectResponse(url=url_mapping.get(shortcode), status_code = status.HTTP_301_MOVED_PERMANENTLY)
 
 @app.get("/api/urls")
@@ -60,7 +90,9 @@ def get_new_url(UrlCreate : UrlCreate):
         "original_url" : original_url,
         "new_url" : generate_short_url(original_url),
         "creation_date" : "20-10-2026",
-        "expiration_date" : "20-10-2027"
+        "expiration_date" : "20-10-2027",
+        "unique_visitors" : 0,
+        "total_visitors" : 0
     }
 
     url_data[id] = data
