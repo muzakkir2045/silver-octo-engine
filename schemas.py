@@ -39,3 +39,17 @@ class UrlMapper(BaseModel):
 
     original_url : str
     new_url : str
+
+
+
+
+
+
+
+
+
+
+
+
+
+    

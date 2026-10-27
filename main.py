@@ -37,7 +37,7 @@ def home(request : Request):
     # # print(ips)
     return {
         "Message" : "Ok" ,
-        # "Headers" : request.headers,
+        "Headers" : request.headers,
         # "Unique" : len(ips),
         # "Total" : total
     }
@@ -59,8 +59,14 @@ def get_shortcode(shortcode : str, request : Request):
         ips.add(client_ip)
     total += 1
 
-    
-    
+    for data in url_data.values():
+        print(data)
+        if data["new_url"] == URL+shortcode:
+            data["unique_visitors"] = len(ips)
+            data["total_visitors"] = total
+
+
+
     return RedirectResponse(url=url_mapping.get(shortcode), status_code = status.HTTP_301_MOVED_PERMANENTLY)
 
 @app.get("/api/urls")
