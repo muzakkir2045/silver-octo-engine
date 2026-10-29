@@ -44,13 +44,14 @@ def home(request : Request):
 
 
 
-@app.get("/{shortcode}")
+@app.get("/{shortcode}", status_code=status.HTTP_302_FOUND)
 def get_shortcode(shortcode : str, request : Request):
-
+    print("this is a debug print")
 
     if shortcode not in url_mapping:
         return RedirectResponse(url="/")
 
+    print("Debug print")
     global total , ips
     forwarded_for = request.headers.get('x-forwarded_for')
     client_ip = forwarded_for.split(",")[0] if forwarded_for else request.client.host
@@ -60,14 +61,11 @@ def get_shortcode(shortcode : str, request : Request):
     total += 1
 
     for data in url_data.values():
-        print(data)
         if data["new_url"] == URL+shortcode:
             data["unique_visitors"] = len(ips)
             data["total_visitors"] = total
 
-
-
-    return RedirectResponse(url=url_mapping.get(shortcode), status_code = status.HTTP_301_MOVED_PERMANENTLY)
+    return RedirectResponse(url=url_mapping.get(shortcode), status_code = status.HTTP_302_FOUND)
 
 @app.get("/api/urls")
 def get_all_urls():

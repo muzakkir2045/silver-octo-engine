@@ -14,8 +14,6 @@ from pydantic import BaseModel, ConfigDict
 }
 """
 
-
-
 class UrlBase(BaseModel):
     original_url : str
     custom_alias : str = None
@@ -39,17 +37,3 @@ class UrlMapper(BaseModel):
 
     original_url : str
     new_url : str
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
